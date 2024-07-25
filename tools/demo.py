@@ -208,22 +208,21 @@ def image_demo(predictor, vis_folder, path, current_time, save_result):
 
 def imageflow_demo(predictor, vis_folder, current_time, args):
     cap = cv2.VideoCapture(args.path if args.demo == "video" else args.camid)
-    width = cap.get(cv2.CAP_PROP_FRAME_WIDTH)  # float
-    height = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)  # float
+    width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+    height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
     fps = cap.get(cv2.CAP_PROP_FPS)
+    
     if args.save_result:
         save_folder = os.path.join(
             vis_folder, time.strftime("%Y_%m_%d_%H_%M_%S", current_time)
         )
         os.makedirs(save_folder, exist_ok=True)
-        if args.demo == "video":
-            save_path = os.path.join(save_folder, os.path.basename(args.path))
-        else:
-            save_path = os.path.join(save_folder, "camera.mp4")
-        logger.info(f"video save_path is {save_path}")
+        save_path = os.path.join(save_folder, os.path.basename(args.path))
+        logger.info(f"Video save_path is {save_path}")
         vid_writer = cv2.VideoWriter(
-            save_path, cv2.VideoWriter_fourcc(*"mp4v"), fps, (int(width), int(height))
+            save_path, cv2.VideoWriter_fourcc(*"mp4v"), fps, (width, height)
         )
+    
     while True:
         ret_val, frame = cap.read()
         if ret_val:
@@ -240,6 +239,9 @@ def imageflow_demo(predictor, vis_folder, current_time, args):
         else:
             break
 
+    cap.release()
+    if args.save_result:
+        vid_writer.release()
 
 def main(exp, args):
     if not args.experiment_name:
